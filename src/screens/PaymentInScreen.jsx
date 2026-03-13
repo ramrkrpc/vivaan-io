@@ -1,21 +1,17 @@
 import { useEffect, useState } from 'react'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { partyOps, invoiceOps, paymentOps } from '../db'
+import { PAYMENT_MODES, formatCurrency, todayDate } from '../utils'
 
 export default function PaymentInScreen({ onNavigate }) {
-  const [parties, setParties] = useState([])
+  const [parties, setParties]   = useState([])
   const [invoices, setInvoices] = useState([])
   const [payments, setPayments] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading]   = useState(true)
   const [showForm, setShowForm] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({
-    partyId: '',
-    invoiceId: '',
-    amount: '',
-    mode: 'cash',
-    date: new Date().toISOString().split('T')[0],
-    notes: '',
+  const [saving, setSaving]     = useState(false)
+  const [form, setForm]         = useState({
+    partyId: '', invoiceId: '', amount: '', mode: 'cash', date: todayDate(), notes: '',
   })
 
   const load = async () => {
@@ -29,9 +25,7 @@ export default function PaymentInScreen({ onNavigate }) {
   useEffect(() => { load() }, [])
   const setF = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
-  const partyInvoices = form.partyId
-    ? invoices.filter(i => i.partyId === Number(form.partyId))
-    : []
+  const partyInvoices = form.partyId ? invoices.filter(i => i.partyId === Number(form.partyId)) : []
 
   const handleSave = async () => {
     const amt = Number(form.amount)
@@ -42,16 +36,16 @@ export default function PaymentInScreen({ onNavigate }) {
       const p = parties.find(x => x.id === Number(form.partyId))
       await paymentOps.add({
         type: 'in',
-        partyId: Number(form.partyId),
+        partyId:   Number(form.partyId),
         partyName: p?.name || '',
         invoiceId: form.invoiceId ? Number(form.invoiceId) : null,
         invoiceNo: form.invoiceId ? invoices.find(i => i.id === Number(form.invoiceId))?.invoiceNo : null,
         amount: amt,
-        mode: form.mode,
-        date: form.date,
+        mode:  form.mode,
+        date:  form.date,
         notes: form.notes,
       })
-      setForm({ partyId: '', invoiceId: '', amount: '', mode: 'cash', date: new Date().toISOString().split('T')[0], notes: '' })
+      setForm({ partyId: '', invoiceId: '', amount: '', mode: 'cash', date: todayDate(), notes: '' })
       setShowForm(false)
       load()
     } finally {
@@ -67,78 +61,103 @@ export default function PaymentInScreen({ onNavigate }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[#f5f6fa]">
-      <div className="px-6 py-4 border-b bg-white shrink-0 flex items-center justify-between">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b bg-white shrink-0 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Payment Received</h1>
-          <p className="text-xs text-gray-400 mt-0.5">Record cash collected from customers</p>
+          <h1 className="text-base md:text-lg font-bold text-gray-900">Payment Received</h1>
+          <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">Record cash collected from customers</p>
         </div>
         <button onClick={() => setShowForm(true)}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 shadow-sm">
-          <PlusIcon className="w-4 h-4" /> Record Payment
+          className="bg-teal-600 hover:bg-teal-700 text-white px-3 md:px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 shadow-sm">
+          <PlusIcon className="w-4 h-4" />
+          <span className="hidden sm:inline">Record Payment</span>
+          <span className="sm:hidden">Record</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto p-5 space-y-4">
+      <div className="flex-1 overflow-auto p-3 md:p-5 space-y-3 md:space-y-4">
+
+        {/* Payment form — bottom sheet on mobile, inline card on desktop */}
         {showForm && (
-          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 max-w-2xl">
-            <h2 className="text-sm font-bold text-gray-800 mb-4">Record Payment Received</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Customer *</label>
-                <select value={form.partyId} onChange={e => { setF('partyId', e.target.value); setF('invoiceId', '') }}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
-                  <option value="">— Select Customer —</option>
-                  {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                </select>
+          <>
+            {/* Mobile backdrop */}
+            <div className="md:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setShowForm(false)} />
+            {/* Form */}
+            <div className="fixed bottom-0 inset-x-0 rounded-t-2xl bg-white shadow-2xl z-50 max-h-[90vh] overflow-y-auto
+                            md:static md:rounded-2xl md:border md:border-gray-100 md:shadow-sm md:max-h-none md:max-w-2xl">
+              {/* Handle (mobile only) */}
+              <div className="md:hidden flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 bg-gray-200 rounded-full" />
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Against Invoice (Optional)</label>
-                <select value={form.invoiceId} onChange={e => {
-                  const inv = invoices.find(i => i.id === Number(e.target.value))
-                  setF('invoiceId', e.target.value)
-                  if (inv) setF('amount', String(inv.balance ?? ''))
-                }} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
-                  <option value="">— No specific invoice —</option>
-                  {partyInvoices.map(i => <option key={i.id} value={i.id}>{i.invoiceNo} (₹{(i.balance ?? 0).toLocaleString('en-IN')})</option>)}
-                </select>
+              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+                <h2 className="text-sm font-bold text-gray-800">Record Payment Received</h2>
+                <button onClick={() => setShowForm(false)} className="p-1.5 hover:bg-gray-100 rounded-lg">
+                  <XMarkIcon className="w-4 h-4 text-gray-500" />
+                </button>
               </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Amount *</label>
-                <input type="number" value={form.amount} onChange={e => setF('amount', e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100" placeholder="0.00" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Payment Mode</label>
-                <select value={form.mode} onChange={e => setF('mode', e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
-                  {['cash', 'bank', 'upi', 'cheque', 'card'].map(m => (
-                    <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Date</label>
-                <input type="date" value={form.date} onChange={e => setF('date', e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400" />
-              </div>
-              <div>
-                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Notes</label>
-                <input value={form.notes} onChange={e => setF('notes', e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100" placeholder="Optional" />
+              <div className="px-5 py-4 space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Customer *</label>
+                    <select value={form.partyId} onChange={e => { setF('partyId', e.target.value); setF('invoiceId', '') }}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
+                      <option value="">— Select Customer —</option>
+                      {parties.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Against Invoice (Optional)</label>
+                    <select value={form.invoiceId} onChange={e => {
+                      const inv = invoices.find(i => i.id === Number(e.target.value))
+                      setF('invoiceId', e.target.value)
+                      if (inv) setF('amount', String(inv.balance ?? ''))
+                    }} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
+                      <option value="">— No specific invoice —</option>
+                      {partyInvoices.map(i => <option key={i.id} value={i.id}>{i.invoiceNo} (₹{formatCurrency(i.balance ?? 0)})</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Amount *</label>
+                    <input type="number" value={form.amount} onChange={e => setF('amount', e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100" placeholder="0.00" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Payment Mode</label>
+                    <select value={form.mode} onChange={e => setF('mode', e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
+                      {PAYMENT_MODES.map(m => (
+                        <option key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Date</label>
+                    <input type="date" value={form.date} onChange={e => setF('date', e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5">Notes</label>
+                    <input value={form.notes} onChange={e => setF('notes', e.target.value)}
+                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100" placeholder="Optional" />
+                  </div>
+                </div>
+                <div className="flex gap-2 pt-2">
+                  <button onClick={() => setShowForm(false)}
+                    className="flex-1 sm:flex-none border border-gray-200 text-gray-600 px-4 py-2.5 rounded-xl text-sm hover:bg-gray-50 font-medium">
+                    Cancel
+                  </button>
+                  <button onClick={handleSave} disabled={saving}
+                    className="flex-1 sm:flex-none bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-50 shadow-sm">
+                    {saving ? 'Saving…' : 'Record Payment'}
+                  </button>
+                </div>
               </div>
             </div>
-            <div className="flex gap-2 mt-4">
-              <button onClick={() => setShowForm(false)} className="border border-gray-200 text-gray-600 px-4 py-2 rounded-xl text-sm hover:bg-gray-50 font-medium">Cancel</button>
-              <button onClick={handleSave} disabled={saving}
-                className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2 rounded-xl text-sm font-semibold disabled:opacity-50 shadow-sm">
-                {saving ? 'Saving…' : 'Record Payment'}
-              </button>
-            </div>
-          </div>
+          </>
         )}
 
+        {/* Payment history */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100">
+          <div className="px-4 md:px-5 py-3 md:py-4 border-b border-gray-100">
             <p className="text-sm font-bold text-gray-800">Payment History</p>
           </div>
           {payments.length === 0 ? (
@@ -147,31 +166,52 @@ export default function PaymentInScreen({ onNavigate }) {
               <p className="text-gray-400 text-sm">No payments recorded yet</p>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  {[['Date', 'left'], ['Customer', 'left'], ['Invoice', 'left'], ['Amount', 'right'], ['Mode', 'left'], ['Notes', 'left']].map(([h, align]) => (
-                    <th key={h} className={`px-5 py-3 text-xs text-gray-400 font-semibold text-${align}`}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {payments.map(pay => (
-                  <tr key={pay.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-5 py-3 text-gray-400 text-xs">{pay.date}</td>
-                    <td className="px-5 py-3 font-medium text-gray-800">{pay.partyName || '—'}</td>
-                    <td className="px-5 py-3 font-mono text-xs text-teal-600 font-semibold">{pay.invoiceNo || '—'}</td>
-                    <td className="px-5 py-3 text-right font-bold text-green-600">
-                      ₹{pay.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-5 py-3">
-                      <span className="capitalize text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">{pay.mode}</span>
-                    </td>
-                    <td className="px-5 py-3 text-gray-400 text-xs">{pay.notes || '—'}</td>
+            <>
+              {/* Desktop table */}
+              <table className="hidden md:table w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    {[['Date','left'],['Customer','left'],['Invoice','left'],['Amount','right'],['Mode','left'],['Notes','left']].map(([h, align]) => (
+                      <th key={h} className={`px-5 py-3 text-xs text-gray-400 font-semibold text-${align}`}>{h}</th>
+                    ))}
                   </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {payments.map(pay => (
+                    <tr key={pay.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-5 py-3 text-gray-400 text-xs">{pay.date}</td>
+                      <td className="px-5 py-3 font-medium text-gray-800">{pay.partyName || '—'}</td>
+                      <td className="px-5 py-3 font-mono text-xs text-teal-600 font-semibold">{pay.invoiceNo || '—'}</td>
+                      <td className="px-5 py-3 text-right font-bold text-green-600">₹{formatCurrency(pay.amount)}</td>
+                      <td className="px-5 py-3">
+                        <span className="capitalize text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">{pay.mode}</span>
+                      </td>
+                      <td className="px-5 py-3 text-gray-400 text-xs">{pay.notes || '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Mobile card list */}
+              <div className="md:hidden divide-y divide-gray-50">
+                {payments.map(pay => (
+                  <div key={pay.id} className="flex items-center gap-3 px-4 py-3">
+                    <div className="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center shrink-0 text-green-600 font-bold text-sm">↓</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{pay.partyName || '—'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {pay.date}
+                        {pay.invoiceNo && <span className="font-mono"> · {pay.invoiceNo}</span>}
+                      </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm font-bold text-green-600">₹{formatCurrency(pay.amount)}</p>
+                      <span className="capitalize text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-medium">{pay.mode}</span>
+                    </div>
+                  </div>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>
