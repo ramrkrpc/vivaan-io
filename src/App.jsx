@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
+import BottomNav from './components/BottomNav'
+import MobileMoreDrawer from './components/MobileMoreDrawer'
 import DashboardScreen from './screens/DashboardScreen'
 import PartyDetailsScreen from './screens/PartyDetailsScreen'
 import WhatsAppConnectScreen from './screens/WhatsAppConnectScreen'
@@ -18,8 +20,13 @@ import './index.css'
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState('home')
+  const [showMoreDrawer, setShowMoreDrawer] = useState(false)
 
-  const navigate = (screen) => setActiveScreen(screen)
+  const navigate = (screen) => {
+    if (screen === '__more__') { setShowMoreDrawer(true); return }
+    setShowMoreDrawer(false)
+    setActiveScreen(screen)
+  }
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -95,11 +102,26 @@ export default function App() {
     <div className="flex flex-col h-screen overflow-hidden bg-gray-100">
       <TopBar />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar activeScreen={activeScreen} onNavigate={navigate} />
-        <main className="flex-1 overflow-hidden">
+        {/* Sidebar — hidden on mobile, visible on md+ */}
+        <div className="hidden md:flex">
+          <Sidebar activeScreen={activeScreen} onNavigate={navigate} />
+        </div>
+        {/* Main content — extra bottom padding on mobile for BottomNav */}
+        <main className="flex-1 overflow-hidden pb-14 md:pb-0">
           {renderScreen()}
         </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <BottomNav activeScreen={activeScreen} onNavigate={navigate} />
+
+      {/* Mobile "More" drawer */}
+      {showMoreDrawer && (
+        <MobileMoreDrawer
+          onClose={() => setShowMoreDrawer(false)}
+          onNavigate={navigate}
+        />
+      )}
     </div>
   )
 }

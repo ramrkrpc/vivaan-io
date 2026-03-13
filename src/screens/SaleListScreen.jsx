@@ -20,7 +20,7 @@ export default function SaleListScreen({ onNavigate }) {
       && (filter === 'all' || inv.status === filter)
   })
 
-  // Single-pass totals (was three separate reduce calls)
+  // Single-pass totals
   const totals = filtered.reduce(
     (acc, i) => ({ total: acc.total + i.total, paid: acc.paid + (i.paid ?? 0), balance: acc.balance + (i.balance ?? 0) }),
     { total: 0, paid: 0, balance: 0 }
@@ -34,19 +34,21 @@ export default function SaleListScreen({ onNavigate }) {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[#f5f6fa]">
-      <div className="px-6 py-4 border-b bg-white shrink-0 flex items-center justify-between">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b bg-white shrink-0 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Sale Invoices</h1>
-          <p className="text-xs text-gray-400 mt-0.5">Track all your sales and collections</p>
+          <h1 className="text-base md:text-lg font-bold text-gray-900">Sale Invoices</h1>
+          <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">Track all your sales and collections</p>
         </div>
         <button onClick={() => onNavigate('sale-invoice-new')}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm">
-          <PlusIcon className="w-4 h-4" /> New Invoice
+          className="bg-teal-600 hover:bg-teal-700 text-white px-3 md:px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+          <PlusIcon className="w-4 h-4" />
+          <span className="hidden sm:inline">New Invoice</span>
+          <span className="sm:hidden">New</span>
         </button>
       </div>
 
       {invoices.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center px-6">
           <div className="text-center">
             <div className="text-6xl mb-4">🧾</div>
             <h2 className="text-xl font-bold text-gray-800 mb-2">No Sale Invoices Yet</h2>
@@ -58,46 +60,46 @@ export default function SaleListScreen({ onNavigate }) {
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-auto p-5 space-y-4">
-          {/* Summary */}
-          <div className="grid grid-cols-3 gap-3">
+        <div className="flex-1 overflow-auto p-3 md:p-5 space-y-3 md:space-y-4">
+          {/* Summary cards */}
+          <div className="grid grid-cols-3 gap-2 md:gap-3">
             {[
-              { label: 'Total Invoiced',      value: totals.total,   color: 'text-gray-800', sub: `${filtered.length} invoices` },
+              { label: 'Total Invoiced',      value: totals.total,   color: 'text-gray-800',  sub: `${filtered.length} invoices` },
               { label: 'Amount Received',     value: totals.paid,    color: 'text-green-600', sub: 'Collected so far' },
               { label: 'Outstanding Balance', value: totals.balance, color: 'text-red-500',   sub: 'Yet to collect' },
             ].map(s => (
-              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
-                <p className="text-xs text-gray-400 mb-1">{s.label}</p>
-                <p className={`text-2xl font-bold ${s.color}`}>₹{formatCurrency(s.value)}</p>
-                <p className="text-xs text-gray-400 mt-1">{s.sub}</p>
+              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-3 md:p-4 shadow-sm">
+                <p className="text-[10px] md:text-xs text-gray-400 mb-1 leading-tight">{s.label}</p>
+                <p className={`text-lg md:text-2xl font-bold ${s.color}`}>₹{formatCurrency(s.value)}</p>
+                <p className="text-[10px] md:text-xs text-gray-400 mt-1 hidden sm:block">{s.sub}</p>
               </div>
             ))}
           </div>
 
           {/* Search + Filter */}
-          <div className="flex items-center gap-3">
-            <div className="relative max-w-xs flex-1">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="relative flex-1">
               <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input type="text" placeholder="Search invoice #, party name…"
+              <input type="text" placeholder="Search invoice, party…"
                 value={search} onChange={e => setSearch(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm bg-white focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100" />
             </div>
-            <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1">
-              {[['all', 'All'], ['unpaid', 'Unpaid'], ['partial', 'Partial'], ['paid', 'Paid']].map(([val, label]) => (
+            <div className="flex gap-0.5 md:gap-1 bg-white border border-gray-200 rounded-xl p-1 shrink-0">
+              {[['all', 'All'], ['unpaid', 'Unpaid'], ['partial', 'Part'], ['paid', 'Paid']].map(([val, label]) => (
                 <button key={val} onClick={() => setFilter(val)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === val ? 'bg-teal-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                  className={`px-2 md:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${filter === val ? 'bg-teal-600 text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
                   {label}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Table */}
-          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
+          {/* Desktop table */}
+          <div className="hidden md:block bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {[['Invoice #', 'left'], ['Customer', 'left'], ['Date', 'left'], ['Due Date', 'left'], ['Total', 'right'], ['Received', 'right'], ['Balance', 'right'], ['Status', 'center'], ['', 'center']].map(([h, align]) => (
+                  {[['Invoice #','left'],['Customer','left'],['Date','left'],['Due Date','left'],['Total','right'],['Received','right'],['Balance','right'],['Status','center'],['','center']].map(([h, align]) => (
                     <th key={h} className={`px-4 py-3 text-xs text-gray-400 font-semibold text-${align}`}>{h}</th>
                   ))}
                 </tr>
@@ -138,6 +140,46 @@ export default function SaleListScreen({ onNavigate }) {
                 <p className="text-gray-400 text-sm">No invoices match your search</p>
               </div>
             )}
+          </div>
+
+          {/* Mobile card list */}
+          <div className="md:hidden bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm divide-y divide-gray-50">
+            {filtered.length === 0 ? (
+              <div className="py-10 text-center">
+                <p className="text-gray-400 text-sm">No invoices match your search</p>
+              </div>
+            ) : filtered.map(inv => (
+              <div key={inv.id} className="p-4">
+                <div className="flex items-start justify-between mb-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-gray-800 text-sm truncate">{inv.partyName || '—'}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 font-mono">{inv.invoiceNo} · {inv.date}</p>
+                  </div>
+                  <div className="shrink-0 ml-3 text-right">
+                    <p className="font-bold text-gray-800 text-sm">₹{formatCurrency(inv.total)}</p>
+                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${STATUS_COLORS[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                      {STATUS_LABELS[inv.status] ?? inv.status}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-3 text-xs">
+                    {(inv.paid ?? 0) > 0 && (
+                      <span className="text-green-600">✓ ₹{formatCurrency(inv.paid)} rcvd</span>
+                    )}
+                    {(inv.balance ?? 0) > 0 && (
+                      <span className="text-red-500">₹{formatCurrency(inv.balance)} due</span>
+                    )}
+                  </div>
+                  {inv.status !== 'paid' && (
+                    <button onClick={() => setPayInvoice(inv)}
+                      className="inline-flex items-center gap-1 text-xs text-teal-600 font-semibold bg-teal-50 active:bg-teal-100 px-3 py-1.5 rounded-xl transition-colors min-h-[36px]">
+                      <BanknotesIcon className="w-3.5 h-3.5" /> Collect
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}

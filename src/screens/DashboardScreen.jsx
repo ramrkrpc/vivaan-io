@@ -51,21 +51,23 @@ export default function DashboardScreen({ onNavigate }) {
   return (
     <div className="flex flex-col h-full overflow-hidden bg-[#f5f6fa]">
       {/* Header */}
-      <div className="px-6 py-4 border-b bg-white shrink-0 flex items-center justify-between">
+      <div className="px-4 md:px-6 py-3 md:py-4 border-b bg-white shrink-0 flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
-          <p className="text-xs text-gray-400 mt-0.5">{today}</p>
+          <h1 className="text-base md:text-lg font-bold text-gray-900">Dashboard</h1>
+          <p className="text-xs text-gray-400 mt-0.5 hidden sm:block">{today}</p>
         </div>
         <button onClick={() => onNavigate('sale-invoice-new')}
-          className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm shadow-teal-200">
-          <PlusIcon className="w-4 h-4" /> New Sale Invoice
+          className="bg-teal-600 hover:bg-teal-700 text-white px-3 md:px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm shadow-teal-200">
+          <PlusIcon className="w-4 h-4" />
+          <span className="hidden sm:inline">New Sale Invoice</span>
+          <span className="sm:hidden">New Sale</span>
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto p-5 space-y-4">
+      <div className="flex-1 overflow-auto p-3 md:p-5 space-y-3 md:space-y-4">
 
-        {/* Money stats */}
-        <div className="grid grid-cols-4 gap-3">
+        {/* Money stats — 2 cols on mobile, 4 on desktop */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
           <StatCard
             label="Today's Sales"
             value={todaySales}
@@ -100,8 +102,8 @@ export default function DashboardScreen({ onNavigate }) {
           />
         </div>
 
-        {/* Second row */}
-        <div className="grid grid-cols-3 gap-3">
+        {/* Second row — stacked on mobile, 3 cols on desktop */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-3">
 
           {/* Cash balance */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
@@ -182,7 +184,7 @@ export default function DashboardScreen({ onNavigate }) {
 
         {/* Recent Invoices */}
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="flex items-center justify-between px-4 md:px-5 py-3 md:py-4 border-b border-gray-100">
             <p className="text-sm font-semibold text-gray-700">Recent Invoices</p>
             <button onClick={() => onNavigate('sale-list')} className="text-xs text-teal-600 hover:underline font-medium">See all →</button>
           </div>
@@ -196,31 +198,57 @@ export default function DashboardScreen({ onNavigate }) {
               </button>
             </div>
           ) : (
-            <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
-                <tr>
-                  {[['Invoice #', 'left'], ['Customer / Supplier', 'left'], ['Date', 'left'], ['Amount', 'right'], ['Status', 'center']].map(([h, align]) => (
-                    <th key={h} className={`px-5 py-3 text-xs text-gray-400 font-semibold text-${align}`}>{h}</th>
+            <>
+              {/* Desktop table */}
+              <table className="hidden md:table w-full text-sm">
+                <thead className="bg-gray-50 border-b border-gray-100">
+                  <tr>
+                    {[['Invoice #', 'left'], ['Customer / Supplier', 'left'], ['Date', 'left'], ['Amount', 'right'], ['Status', 'center']].map(([h, align]) => (
+                      <th key={h} className={`px-5 py-3 text-xs text-gray-400 font-semibold text-${align}`}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {recent.map(inv => (
+                    <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer transition-colors"
+                      onClick={() => onNavigate(inv.type === 'sale' ? 'sale-list' : 'purchase-list')}>
+                      <td className="px-5 py-3 font-mono text-xs text-blue-600 font-semibold">{inv.invoiceNo}</td>
+                      <td className="px-5 py-3 text-gray-800 font-medium">{inv.partyName || '—'}</td>
+                      <td className="px-5 py-3 text-gray-400 text-xs">{inv.date}</td>
+                      <td className="px-5 py-3 text-right font-bold text-gray-800">₹{formatCurrency(inv.total)}</td>
+                      <td className="px-5 py-3 text-center">
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${STATUS_COLORS[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                          {STATUS_LABELS[inv.status] ?? inv.status}
+                        </span>
+                      </td>
+                    </tr>
                   ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
+                </tbody>
+              </table>
+
+              {/* Mobile card list */}
+              <div className="md:hidden divide-y divide-gray-50">
                 {recent.map(inv => (
-                  <tr key={inv.id} className="hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => onNavigate(inv.type === 'sale' ? 'sale-list' : 'purchase-list')}>
-                    <td className="px-5 py-3 font-mono text-xs text-blue-600 font-semibold">{inv.invoiceNo}</td>
-                    <td className="px-5 py-3 text-gray-800 font-medium">{inv.partyName || '—'}</td>
-                    <td className="px-5 py-3 text-gray-400 text-xs">{inv.date}</td>
-                    <td className="px-5 py-3 text-right font-bold text-gray-800">₹{formatCurrency(inv.total)}</td>
-                    <td className="px-5 py-3 text-center">
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-semibold capitalize ${STATUS_COLORS[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>
+                  <button key={inv.id} onClick={() => onNavigate(inv.type === 'sale' ? 'sale-list' : 'purchase-list')}
+                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors text-left">
+                    <div className={`w-9 h-9 rounded-xl shrink-0 flex items-center justify-center text-sm font-bold
+                      ${inv.type === 'sale' ? 'bg-teal-50 text-teal-600' : 'bg-blue-50 text-blue-600'}`}>
+                      {inv.type === 'sale' ? '↑' : '↓'}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{inv.partyName || '—'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">{inv.invoiceNo} · {inv.date}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm font-bold text-gray-800">₹{formatCurrency(inv.total)}</p>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${STATUS_COLORS[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>
                         {STATUS_LABELS[inv.status] ?? inv.status}
                       </span>
-                    </td>
-                  </tr>
+                    </div>
+                  </button>
                 ))}
-              </tbody>
-            </table>
+              </div>
+            </>
           )}
         </div>
       </div>
