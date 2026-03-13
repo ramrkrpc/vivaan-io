@@ -119,7 +119,6 @@ export default function Sidebar({ activeScreen, onNavigate, businessName = 'My B
                         ? 'bg-teal-600/20 text-teal-300 font-medium'
                         : 'text-gray-400 hover:bg-[#252545] hover:text-gray-200'
                     }`}
-                    style={{ width: 'calc(100% - 12px)' }}
                   >
                     <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-teal-400' : ''}`} />
                     <span className="flex-1 leading-tight text-[13px]">{item.label}</span>

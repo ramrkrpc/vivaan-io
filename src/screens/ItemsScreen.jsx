@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { itemOps } from '../db'
+import { formatCurrency } from '../utils'
 
 const UNITS = ['Nos', 'Kg', 'Litre', 'Meter', 'Box', 'Pack', 'Dozen', 'Set', 'Piece', 'Quintal', 'Ton']
 const GST_RATES = ['0', '5', '12', '18', '28']
@@ -156,6 +157,16 @@ export default function ItemsScreen() {
     (i.category || '').toLowerCase().includes(search.toLowerCase())
   )
 
+  // Single-pass stock counts (replaces two separate .filter() calls)
+  const stockCounts = items.reduce(
+    (acc, i) => {
+      if (i.currentStock <= 0) acc.outOfStock++
+      else if (i.currentStock <= (i.lowStockAlert ?? 5)) acc.lowStock++
+      return acc
+    },
+    { lowStock: 0, outOfStock: 0 }
+  )
+
   if (loading) return (
     <div className="flex items-center justify-center h-full">
       <div className="w-6 h-6 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
@@ -193,8 +204,8 @@ export default function ItemsScreen() {
           <div className="grid grid-cols-3 gap-3">
             {[
               { label: 'Total Products', value: items.length, color: 'text-gray-800', sub: 'in your catalogue' },
-              { label: 'Low Stock Items', value: items.filter(i => i.currentStock <= (i.lowStockAlert ?? 5) && i.currentStock > 0).length, color: 'text-orange-500', sub: 'need restocking' },
-              { label: 'Out of Stock', value: items.filter(i => i.currentStock <= 0).length, color: 'text-red-600', sub: 'unavailable now' },
+              { label: 'Low Stock Items', value: stockCounts.lowStock, color: 'text-orange-500', sub: 'need restocking' },
+              { label: 'Out of Stock', value: stockCounts.outOfStock, color: 'text-red-600', sub: 'unavailable now' },
             ].map(s => (
               <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
                 <p className="text-xs text-gray-400 mb-1">{s.label}</p>
@@ -231,10 +242,10 @@ export default function ItemsScreen() {
                     </td>
                     <td className="px-4 py-3 text-gray-400 font-mono text-xs">{item.hsn || '—'}</td>
                     <td className="px-4 py-3 text-right font-semibold text-gray-800">
-                      {item.salePrice > 0 ? `₹${Number(item.salePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : <span className="text-gray-300 font-normal">—</span>}
+                      {item.salePrice > 0 ? `₹${formatCurrency(item.salePrice)}` : <span className="text-gray-300 font-normal">—</span>}
                     </td>
                     <td className="px-4 py-3 text-right text-gray-500">
-                      {item.purchasePrice > 0 ? `₹${Number(item.purchasePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : <span className="text-gray-300">—</span>}
+                      {item.purchasePrice > 0 ? `₹${formatCurrency(item.purchasePrice)}` : <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-xs">{item.unit}</td>
                     <td className="px-4 py-3">

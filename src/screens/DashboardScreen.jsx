@@ -4,14 +4,9 @@ import {
   ArrowTrendingUpIcon, ArrowTrendingDownIcon,
   BanknotesIcon, ClockIcon, PlusIcon,
 } from '@heroicons/react/24/outline'
+import { STATUS_COLORS, STATUS_LABELS, formatCurrency } from '../utils'
 
-const STATUS_COLORS = {
-  paid: 'bg-green-100 text-green-700',
-  partial: 'bg-amber-100 text-amber-700',
-  unpaid: 'bg-red-100 text-red-700'
-}
-
-function StatCard({ label, value, icon, bgColor, textColor, subLabel, subValue, subColor }) {
+function StatCard({ label, value, icon, bgColor, textColor, subLabel }) {
   return (
     <div className={`rounded-2xl p-5 flex flex-col gap-3 ${bgColor}`}>
       <div className="flex items-center justify-between">
@@ -22,10 +17,10 @@ function StatCard({ label, value, icon, bgColor, textColor, subLabel, subValue, 
       </div>
       <div>
         <p className={`text-2xl font-bold tracking-tight ${textColor}`}>
-          ₹{value.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          ₹{formatCurrency(value)}
         </p>
         {subLabel && (
-          <p className={`text-xs mt-1 opacity-70 ${subColor || textColor}`}>{subLabel}</p>
+          <p className={`text-xs mt-1 opacity-70 ${textColor}`}>{subLabel}</p>
         )}
       </div>
     </div>
@@ -85,7 +80,7 @@ export default function DashboardScreen({ onNavigate }) {
             icon={<ArrowTrendingUpIcon className="w-5 h-5 text-white" />}
             bgColor="bg-gradient-to-br from-blue-500 to-blue-600"
             textColor="text-white"
-            subLabel={`₹${monthPurchases.toLocaleString('en-IN')} in purchases`}
+            subLabel={`₹${formatCurrency(monthPurchases)} in purchases`}
           />
           <StatCard
             label="Customers Owe You"
@@ -117,7 +112,7 @@ export default function DashboardScreen({ onNavigate }) {
               <p className="text-sm font-semibold text-gray-700">Cash Balance</p>
             </div>
             <p className={`text-3xl font-bold tracking-tight ${cashBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              ₹{Math.abs(cashBalance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              ₹{formatCurrency(Math.abs(cashBalance))}
             </p>
             <p className="text-xs text-gray-400 mt-1">{cashBalance >= 0 ? 'Cash available in hand' : 'Cash shortfall'}</p>
 
@@ -216,10 +211,10 @@ export default function DashboardScreen({ onNavigate }) {
                     <td className="px-5 py-3 font-mono text-xs text-blue-600 font-semibold">{inv.invoiceNo}</td>
                     <td className="px-5 py-3 text-gray-800 font-medium">{inv.partyName || '—'}</td>
                     <td className="px-5 py-3 text-gray-400 text-xs">{inv.date}</td>
-                    <td className="px-5 py-3 text-right font-bold text-gray-800">₹{inv.total.toLocaleString('en-IN')}</td>
+                    <td className="px-5 py-3 text-right font-bold text-gray-800">₹{formatCurrency(inv.total)}</td>
                     <td className="px-5 py-3 text-center">
                       <span className={`text-xs px-2.5 py-1 rounded-full font-semibold capitalize ${STATUS_COLORS[inv.status] ?? 'bg-gray-100 text-gray-600'}`}>
-                        {inv.status === 'paid' ? 'Paid' : inv.status === 'partial' ? 'Partial' : 'Unpaid'}
+                        {STATUS_LABELS[inv.status] ?? inv.status}
                       </span>
                     </td>
                   </tr>
