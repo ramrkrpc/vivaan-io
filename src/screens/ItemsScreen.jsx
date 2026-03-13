@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, PencilIcon, TrashIcon, XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { itemOps } from '../db'
 
 const UNITS = ['Nos', 'Kg', 'Litre', 'Meter', 'Box', 'Pack', 'Dozen', 'Set', 'Piece', 'Quintal', 'Ton']
@@ -42,87 +42,92 @@ function ItemModal({ initialData, onClose, onSave }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl w-[600px] max-h-[88vh] flex flex-col">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-          <h2 className="text-base font-semibold text-gray-800">{editing ? 'Edit Item' : 'Add Item'}</h2>
-          <button onClick={onClose}><XMarkIcon className="w-5 h-5 text-gray-500" /></button>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-[600px] max-h-[88vh] flex flex-col">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <div>
+            <h2 className="text-base font-bold text-gray-900">{editing ? 'Edit Product' : 'Add Product'}</h2>
+            <p className="text-xs text-gray-400 mt-0.5">{editing ? 'Update product details' : 'Add a new product or service'}</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+            <XMarkIcon className="w-5 h-5 text-gray-500" />
+          </button>
         </div>
         <div className="flex-1 overflow-auto px-6 py-5 space-y-4">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Item Name *</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Product Name *</label>
             <input value={form.name} onChange={e => set('name', e.target.value)} autoFocus
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400"
-              placeholder="Enter item name" />
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
+              placeholder="e.g. Office Chair, Web Design Service" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Sale Price (Rs)</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Sale Price (₹)</label>
               <input type="number" value={form.salePrice} onChange={e => set('salePrice', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                 placeholder="0.00" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Purchase Price (Rs)</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Purchase Price (₹)</label>
               <input type="number" value={form.purchasePrice} onChange={e => set('purchasePrice', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                 placeholder="0.00" />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Unit</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Unit</label>
               <select value={form.unit} onChange={e => set('unit', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-teal-400">
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
                 {UNITS.map(u => <option key={u}>{u}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">GST %</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">GST Rate</label>
               <select value={form.gst} onChange={e => set('gst', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:border-teal-400">
-                {GST_RATES.map(g => <option key={g}>{g}</option>)}
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm bg-white focus:outline-none focus:border-teal-400">
+                {GST_RATES.map(g => <option key={g} value={g}>{g}%</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Opening Stock</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Opening Stock</label>
               <input type="number" value={form.openingStock} onChange={e => set('openingStock', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                 placeholder="0" />
             </div>
           </div>
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">HSN Code</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">HSN Code</label>
               <input value={form.hsn} onChange={e => set('hsn', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                 placeholder="HSN Code" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Category</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Category</label>
               <input value={form.category} onChange={e => set('category', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400"
-                placeholder="Category" />
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
+                placeholder="e.g. Electronics" />
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">Low Stock Alert</label>
+              <label className="block text-xs font-semibold text-gray-600 mb-1.5">Low Stock Alert</label>
               <input type="number" value={form.lowStockAlert} onChange={e => set('lowStockAlert', e.target.value)}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400"
+                className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100"
                 placeholder="5" />
             </div>
           </div>
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Description</label>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Description</label>
             <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={2}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-teal-400 resize-none"
-              placeholder="Item description" />
+              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100 resize-none"
+              placeholder="Optional product description" />
           </div>
         </div>
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-200">
-          <button onClick={onClose} className="border border-gray-300 text-gray-600 px-5 py-2 rounded-lg text-sm hover:bg-gray-50">Cancel</button>
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+          <button onClick={onClose} className="border border-gray-200 text-gray-600 px-5 py-2 rounded-xl text-sm hover:bg-gray-50 font-medium">Cancel</button>
           <button onClick={handleSave} disabled={saving}
-            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50">
-            {saving ? 'Saving...' : editing ? 'Update' : 'Save'}
+            className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-xl text-sm font-semibold disabled:opacity-50 shadow-sm">
+            {saving ? 'Saving…' : editing ? 'Update Product' : 'Save Product'}
           </button>
         </div>
       </div>
@@ -158,85 +163,97 @@ export default function ItemsScreen() {
   )
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="px-6 py-3 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between">
-        <h1 className="text-base font-semibold text-gray-800">Items</h1>
+    <div className="flex flex-col h-full overflow-hidden bg-[#f5f6fa]">
+      <div className="px-6 py-4 border-b bg-white shrink-0 flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-bold text-gray-900">My Products</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Manage your inventory and pricing</p>
+        </div>
         <button onClick={() => { setEditing(null); setShowModal(true) }}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-1.5">
-          <PlusIcon className="w-4 h-4" /> Add Item
+          className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5 transition-all shadow-sm">
+          <PlusIcon className="w-4 h-4" /> Add Product
         </button>
       </div>
 
       {items.length === 0 ? (
-        <div className="flex-1 flex items-center justify-center bg-gray-50">
+        <div className="flex-1 flex items-center justify-center">
           <div className="text-center max-w-sm">
-            <div className="text-5xl mb-4">📦</div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Item List</h2>
-            <p className="text-gray-500 text-sm mb-6">Add your products and services to create invoices quickly.</p>
+            <div className="text-6xl mb-4">📦</div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">No products yet</h2>
+            <p className="text-gray-500 text-sm mb-6">Add your products and services to create invoices in seconds.</p>
             <button onClick={() => { setEditing(null); setShowModal(true) }}
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2.5 rounded-lg font-medium text-sm flex items-center gap-2 mx-auto">
-              <PlusIcon className="w-4 h-4" /> Add Your First Item
+              className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 mx-auto shadow-sm">
+              <PlusIcon className="w-4 h-4" /> Add Your First Product
             </button>
           </div>
         </div>
       ) : (
-        <div className="flex-1 overflow-auto bg-gray-50 p-5">
-          <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="flex-1 overflow-auto p-5 space-y-4">
+          {/* Summary */}
+          <div className="grid grid-cols-3 gap-3">
             {[
-              { label: 'Total Items', value: items.length, fmt: v => v, color: 'text-gray-800' },
-              { label: 'Low Stock', value: items.filter(i => i.currentStock <= (i.lowStockAlert ?? 5)).length, fmt: v => v, color: 'text-red-600' },
-              { label: 'Out of Stock', value: items.filter(i => i.currentStock <= 0).length, fmt: v => v, color: 'text-red-700' },
+              { label: 'Total Products', value: items.length, color: 'text-gray-800', sub: 'in your catalogue' },
+              { label: 'Low Stock Items', value: items.filter(i => i.currentStock <= (i.lowStockAlert ?? 5) && i.currentStock > 0).length, color: 'text-orange-500', sub: 'need restocking' },
+              { label: 'Out of Stock', value: items.filter(i => i.currentStock <= 0).length, color: 'text-red-600', sub: 'unavailable now' },
             ].map(s => (
-              <div key={s.label} className="bg-white rounded-xl border border-gray-200 p-4">
-                <p className="text-xs text-gray-500">{s.label}</p>
-                <p className={`text-2xl font-bold ${s.color}`}>{s.fmt(s.value)}</p>
+              <div key={s.label} className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm">
+                <p className="text-xs text-gray-400 mb-1">{s.label}</p>
+                <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+                <p className="text-xs text-gray-400 mt-1">{s.sub}</p>
               </div>
             ))}
           </div>
 
-          <div className="mb-3">
-            <input type="text" placeholder="Search name, HSN, category..."
+          {/* Search */}
+          <div className="relative max-w-xs">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input type="text" placeholder="Search name, HSN, category…"
               value={search} onChange={e => setSearch(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-teal-400 w-72" />
+              className="w-full border border-gray-200 rounded-xl pl-9 pr-3 py-2 text-sm bg-white focus:outline-none focus:border-teal-400 focus:ring-1 focus:ring-teal-100" />
           </div>
 
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          {/* Table */}
+          <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-gray-50 border-b border-gray-100">
                 <tr>
-                  {['Item Name', 'HSN', 'Sale Price', 'Purchase Price', 'Unit', 'GST%', 'Stock', 'Actions'].map(h => (
-                    <th key={h} className={`px-4 py-2.5 text-gray-500 font-medium text-xs ${['Sale Price', 'Purchase Price', 'Stock'].includes(h) ? 'text-right' : h === 'Actions' ? 'text-center' : 'text-left'}`}>{h}</th>
+                  {[['Product Name', 'left'], ['HSN', 'left'], ['Sale Price', 'right'], ['Purchase Price', 'right'], ['Unit', 'left'], ['GST', 'left'], ['Stock', 'right'], ['', 'center']].map(([h, align]) => (
+                    <th key={h} className={`px-4 py-3 text-xs text-gray-400 font-semibold text-${align}`}>{h}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-50">
                 {filtered.map(item => (
-                  <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-4 py-2.5">
-                      <p className="font-medium text-gray-800">{item.name}</p>
-                      {item.category && <p className="text-xs text-gray-400">{item.category}</p>}
+                  <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3">
+                      <p className="font-semibold text-gray-800">{item.name}</p>
+                      {item.category && <p className="text-xs text-gray-400 mt-0.5">{item.category}</p>}
                     </td>
-                    <td className="px-4 py-2.5 text-gray-500 font-mono text-xs">{item.hsn || '—'}</td>
-                    <td className="px-4 py-2.5 text-right font-medium text-gray-700">
-                      {item.salePrice > 0 ? `Rs ${Number(item.salePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
+                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{item.hsn || '—'}</td>
+                    <td className="px-4 py-3 text-right font-semibold text-gray-800">
+                      {item.salePrice > 0 ? `₹${Number(item.salePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : <span className="text-gray-300 font-normal">—</span>}
                     </td>
-                    <td className="px-4 py-2.5 text-right text-gray-600">
-                      {item.purchasePrice > 0 ? `Rs ${Number(item.purchasePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : '—'}
+                    <td className="px-4 py-3 text-right text-gray-500">
+                      {item.purchasePrice > 0 ? `₹${Number(item.purchasePrice).toLocaleString('en-IN', { minimumFractionDigits: 2 })}` : <span className="text-gray-300">—</span>}
                     </td>
-                    <td className="px-4 py-2.5 text-gray-600">{item.unit}</td>
-                    <td className="px-4 py-2.5 text-gray-600">{item.gst}%</td>
-                    <td className="px-4 py-2.5 text-right">
-                      <span className={`font-medium ${item.currentStock <= 0 ? 'text-red-600' : item.currentStock <= (item.lowStockAlert ?? 5) ? 'text-orange-500' : 'text-gray-700'}`}>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{item.unit}</td>
+                    <td className="px-4 py-3">
+                      <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-medium">{item.gst}%</span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={`font-bold text-sm ${item.currentStock <= 0 ? 'text-red-600' : item.currentStock <= (item.lowStockAlert ?? 5) ? 'text-orange-500' : 'text-gray-700'}`}>
                         {item.currentStock}
                       </span>
                       <span className="text-xs text-gray-400 ml-1">{item.unit}</span>
                     </td>
-                    <td className="px-4 py-2.5 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <button onClick={() => { setEditing(item); setShowModal(true) }} className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded">
+                    <td className="px-4 py-3">
+                      <div className="flex items-center justify-center gap-1">
+                        <button onClick={() => { setEditing(item); setShowModal(true) }}
+                          className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                           <PencilIcon className="w-3.5 h-3.5" />
                         </button>
-                        <button onClick={() => handleDelete(item.id)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded">
+                        <button onClick={() => handleDelete(item.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                           <TrashIcon className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -245,7 +262,11 @@ export default function ItemsScreen() {
                 ))}
               </tbody>
             </table>
-            {filtered.length === 0 && <p className="text-center text-gray-400 text-sm py-8">No items found</p>}
+            {filtered.length === 0 && (
+              <div className="py-10 text-center">
+                <p className="text-gray-400 text-sm">No products match your search</p>
+              </div>
+            )}
           </div>
         </div>
       )}
