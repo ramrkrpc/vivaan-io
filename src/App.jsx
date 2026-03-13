@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { settingsOps } from './db'
 import TopBar from './components/TopBar'
 import Sidebar from './components/Sidebar'
 import BottomNav from './components/BottomNav'
@@ -15,17 +16,28 @@ import PaymentOutScreen from './screens/PaymentOutScreen'
 import ItemsScreen from './screens/ItemsScreen'
 import ReportsScreen from './screens/ReportsScreen'
 import SettingsScreen from './screens/SettingsScreen'
+import ExpenseScreen from './screens/ExpenseScreen'
+import BackupScreen from './screens/BackupScreen'
 import PlaceholderScreen from './screens/PlaceholderScreen'
 import './index.css'
 
 export default function App() {
-  const [activeScreen, setActiveScreen] = useState('home')
+  const [activeScreen, setActiveScreen]   = useState('home')
   const [showMoreDrawer, setShowMoreDrawer] = useState(false)
+  const [businessName, setBusinessName]   = useState('My Business')
+
+  useEffect(() => {
+    settingsOps.get('business').then(b => { if (b?.businessName) setBusinessName(b.businessName) })
+  }, [])
 
   const navigate = (screen) => {
     if (screen === '__more__') { setShowMoreDrawer(true); return }
     setShowMoreDrawer(false)
     setActiveScreen(screen)
+    // Refresh business name when leaving settings
+    if (activeScreen === 'settings') {
+      settingsOps.get('business').then(b => { if (b?.businessName) setBusinessName(b.businessName) })
+    }
   }
 
   const renderScreen = () => {
@@ -72,7 +84,7 @@ export default function App() {
       case 'purchase-order':
         return <PlaceholderScreen title="Purchase Order" icon="📦" description="Create and manage purchase orders." buttonLabel="Create Purchase Order" />
       case 'expense':
-        return <PlaceholderScreen title="Expense" icon="🧮" description="Track all your business expenses." buttonLabel="Add Expense" />
+        return <ExpenseScreen onNavigate={navigate} />
       case 'online-store':
         return <PlaceholderScreen title="Online Store" icon="🛍️" description="Set up your online store and start selling." buttonLabel="Setup Store" />
       case 'loyalty':
@@ -86,7 +98,7 @@ export default function App() {
       case 'sync-data':
         return <PlaceholderScreen title="Sync Data" icon="🔄" description="Sync your data across devices." buttonLabel="Sync Now" />
       case 'backup':
-        return <PlaceholderScreen title="Backup" icon="☁️" description="Backup your data securely." buttonLabel="Backup Now" />
+        return <BackupScreen />
       case 'godown':
         return <PlaceholderScreen title="Godown" icon="🏭" description="Manage multiple warehouses/godowns." buttonLabel="Add Godown" />
       case 'price-list':
@@ -104,7 +116,7 @@ export default function App() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar — hidden on mobile, visible on md+ */}
         <div className="hidden md:flex">
-          <Sidebar activeScreen={activeScreen} onNavigate={navigate} />
+          <Sidebar activeScreen={activeScreen} onNavigate={navigate} businessName={businessName} />
         </div>
         {/* Main content — extra bottom padding on mobile for BottomNav */}
         <main className="flex-1 overflow-hidden pb-14 md:pb-0">
