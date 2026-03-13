@@ -1,0 +1,105 @@
+import { useState } from 'react'
+import TopBar from './components/TopBar'
+import Sidebar from './components/Sidebar'
+import DashboardScreen from './screens/DashboardScreen'
+import PartyDetailsScreen from './screens/PartyDetailsScreen'
+import WhatsAppConnectScreen from './screens/WhatsAppConnectScreen'
+import SaleInvoiceScreen from './screens/SaleInvoiceScreen'
+import PurchaseInvoiceScreen from './screens/PurchaseInvoiceScreen'
+import SaleListScreen from './screens/SaleListScreen'
+import PurchaseListScreen from './screens/PurchaseListScreen'
+import PaymentInScreen from './screens/PaymentInScreen'
+import PaymentOutScreen from './screens/PaymentOutScreen'
+import ItemsScreen from './screens/ItemsScreen'
+import ReportsScreen from './screens/ReportsScreen'
+import SettingsScreen from './screens/SettingsScreen'
+import PlaceholderScreen from './screens/PlaceholderScreen'
+import './index.css'
+
+export default function App() {
+  const [activeScreen, setActiveScreen] = useState('home')
+
+  const navigate = (screen) => setActiveScreen(screen)
+
+  const renderScreen = () => {
+    switch (activeScreen) {
+      case 'home':
+      case 'dashboard':
+        return <DashboardScreen onNavigate={navigate} />
+      case 'party-details':
+        return <PartyDetailsScreen onNavigate={navigate} />
+      case 'items':
+        return <ItemsScreen onNavigate={navigate} />
+      case 'sale-invoice-new':
+        return <SaleInvoiceScreen onNavigate={navigate} invoiceType="sale" />
+      case 'purchase-invoice-new':
+        return <PurchaseInvoiceScreen onNavigate={navigate} />
+      case 'sale-list':
+        return <SaleListScreen onNavigate={navigate} />
+      case 'purchase-list':
+        return <PurchaseListScreen onNavigate={navigate} />
+      case 'payment-in':
+        return <PaymentInScreen onNavigate={navigate} />
+      case 'payment-out':
+        return <PaymentOutScreen onNavigate={navigate} />
+      case 'reports':
+        return <ReportsScreen onNavigate={navigate} />
+      case 'settings':
+        return <SettingsScreen />
+      case 'whatsapp-connect':
+        return <WhatsAppConnectScreen />
+      case 'vyapar-network':
+        return <PlaceholderScreen title="Vivaan Network" icon="🌐" description="Connect with other businesses to grow your network." buttonLabel="Explore Network" />
+      case 'sale-return':
+        return <PlaceholderScreen title="Sale Return" icon="↩️" description="Manage sales returns and credit notes." buttonLabel="Add Sale Return" />
+      case 'estimate':
+        return <PlaceholderScreen title="Estimate / Quotation" icon="📝" description="Create estimates and quotations for customers." buttonLabel="Create Estimate" />
+      case 'sale-order':
+        return <PlaceholderScreen title="Sale Order" icon="📋" description="Manage sale orders from your customers." buttonLabel="Create Sale Order" />
+      case 'delivery-challan':
+        return <PlaceholderScreen title="Delivery Challan" icon="🚚" description="Create and manage delivery challans." buttonLabel="Create Challan" />
+      case 'pos-billing':
+        return <PlaceholderScreen title="POS Billing" icon="🖥️" description="Point of Sale billing for quick transactions." buttonLabel="Start POS" />
+      case 'purchase-return':
+        return <PlaceholderScreen title="Purchase Return" icon="↩️" description="Manage purchase returns and debit notes." buttonLabel="Add Purchase Return" />
+      case 'purchase-order':
+        return <PlaceholderScreen title="Purchase Order" icon="📦" description="Create and manage purchase orders." buttonLabel="Create Purchase Order" />
+      case 'expense':
+        return <PlaceholderScreen title="Expense" icon="🧮" description="Track all your business expenses." buttonLabel="Add Expense" />
+      case 'online-store':
+        return <PlaceholderScreen title="Online Store" icon="🛍️" description="Set up your online store and start selling." buttonLabel="Setup Store" />
+      case 'loyalty':
+        return <PlaceholderScreen title="Loyalty Program" icon="⭐" description="Reward your loyal customers." buttonLabel="Setup Loyalty" />
+      case 'cash-account':
+        return <PlaceholderScreen title="Cash Account" icon="💵" description="Manage your cash transactions." buttonLabel="Add Transaction" />
+      case 'bank-account':
+        return <PlaceholderScreen title="Bank Account" icon="🏦" description="Manage your bank accounts and transactions." buttonLabel="Add Bank Account" />
+      case 'cheque':
+        return <PlaceholderScreen title="Cheque" icon="📜" description="Manage cheque transactions." buttonLabel="Add Cheque" />
+      case 'sync-data':
+        return <PlaceholderScreen title="Sync Data" icon="🔄" description="Sync your data across devices." buttonLabel="Sync Now" />
+      case 'backup':
+        return <PlaceholderScreen title="Backup" icon="☁️" description="Backup your data securely." buttonLabel="Backup Now" />
+      case 'godown':
+        return <PlaceholderScreen title="Godown" icon="🏭" description="Manage multiple warehouses/godowns." buttonLabel="Add Godown" />
+      case 'price-list':
+        return <PlaceholderScreen title="Price List" icon="🏷️" description="Create and manage price lists for different customers." buttonLabel="Create Price List" />
+      case 'plans':
+        return <PlaceholderScreen title="Plans & Pricing" icon="👑" description="Upgrade to Vivaan.io Premium to unlock all features." buttonLabel="View Premium Plans" />
+      default:
+        return <DashboardScreen onNavigate={navigate} />
+    }
+  }
+
+  return (
+    <div className="flex flex-col h-screen overflow-hidden bg-gray-100">
+      <TopBar />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar activeScreen={activeScreen} onNavigate={navigate} />
+        <main className="flex-1 overflow-hidden">
+          {renderScreen()}
+        </main>
+      </div>
+    </div>
+  )
+}
